@@ -16,6 +16,7 @@ api.interceptors.request.use(
   (config) => {
     config.headers["Cache-Control"] = "no-cache ";
     config.headers["Pragma"] = "no-cache";
+    config.headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
     const accessToken = store.getState()?.auth?.accessToken;
 
