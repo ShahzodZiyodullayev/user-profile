@@ -1,0 +1,10 @@
+{
+  "build": {
+    "env": {
+      "CI": "false"
+    }
+  },
+  "scripts": {
+    "build": "yarn install-all && yarn build"
+  }
+}

@@ -10,7 +10,7 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(authMiddleware),
-  devTools: process.env.NODE_ENV !== "production",
+  devTools: import.meta.env.NODE_ENV !== "production",
 });
 
 export type AppDispatch = typeof store.dispatch;
