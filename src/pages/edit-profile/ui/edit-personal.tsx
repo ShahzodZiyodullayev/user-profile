@@ -1,4 +1,5 @@
 import { useUserActions } from "@/entities/user/model";
+import { notify, notifyError } from "@/shared/lib";
 import {
   userProfileInitialValues,
   userProfileInputFields,
@@ -24,7 +25,7 @@ import { useSelector } from "react-redux";
 
 export const EditPersonal = () => {
   const { user } = useSelector((state: { user: TUser }) => state);
-  const [avatar, setAvatar] = useState<string | undefined>();
+  const [avatar, setAvatar] = useState<string>("");
   const [editable, setEditable] = useState<boolean>(true);
   const session = getSession();
 
@@ -45,18 +46,21 @@ export const EditPersonal = () => {
     }
   };
 
-  const handleSubmit = async (values: TUser) => {
+  const handleSubmit = async (values: TUser | any) => {
     const formData = new FormData();
 
     Object.keys(values).forEach((key) => {
       formData.append(key, values[key]);
     });
-
-    formData.append("userId", session?.userId);
-
-    console.log(formData);
-
-    await updateUser.mutateAsync(formData);
+    formData.append("userId", session?.userId as string);
+    try {
+      await updateUser.mutateAsync(formData);
+      notify("Data saved successfully!", "lime");
+    } catch (error) {
+      notifyError(
+        "An error occurred while saving data. Please try again later",
+      );
+    }
   };
 
   useEffect(() => {
@@ -75,7 +79,7 @@ export const EditPersonal = () => {
           <Grid grow gutter={30} mt={50} maw={500}>
             <Grid.Col span={6}>
               <Group pos="relative" w="max-content">
-                <Avatar size={100} src={avatar || user.avatar} />
+                <Avatar size={100} src={avatar || (user.avatar as string)} />
                 {!editable && (
                   <FileButton
                     onChange={handleFileChange}

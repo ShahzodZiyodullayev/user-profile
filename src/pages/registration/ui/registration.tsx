@@ -10,6 +10,7 @@ import {
 import BellImage from "@/shared/assets/bell.jpg";
 import { useForm } from "@mantine/form";
 import { useAuthActions } from "@/entities/login/model";
+import { notify, notifyError } from "@/shared/lib";
 
 export const Registration = () => {
   const form = useForm({
@@ -31,7 +32,12 @@ export const Registration = () => {
   const { Login } = useAuthActions();
 
   const handleSubmit = async (value: any) => {
-    await Login.mutateAsync(value);
+    try {
+      await Login.mutateAsync(value);
+      notify("Success", "lime");
+    } catch (error) {
+      notifyError(error);
+    }
   };
 
   return (

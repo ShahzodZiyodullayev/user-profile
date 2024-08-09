@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 export const Header = () => {
   const { user } = useSelector((state: { user: TUser }) => state);
 
+  console.log(user.avatar);
+
   return (
     <Flex h={70} justify="space-between" align="center">
       <Title fz="h3" fw={700}>
@@ -13,7 +15,7 @@ export const Header = () => {
       </Title>
       <Group>
         <IconSettingsFilled cursor="pointer" />
-        <Avatar src={user.avatar} />
+        <Avatar src={user.avatar as string} />
       </Group>
     </Flex>
   );

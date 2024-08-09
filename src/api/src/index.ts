@@ -3,45 +3,32 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
-import fs from "fs/promises";
+import fs, { readdir, unlink } from "fs/promises";
 import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// __dirname ni ESM rejimida aniqlash
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// const storage = multer.diskStorage({
-//   destination: (_req, _file, callback) => {
-//     callback(null, __dirname + "/files");
-//   },
-//   filename: (_req, _file, callback) => {
-//     const filename = `file_${uuid()}.jpg`;
-//     callback(null, filename);
-//   },
-// });
-
 const storage = multer.diskStorage({
-  destination: function (req, file, callback) {
+  destination: function (_req, _file, callback) {
     callback(null, "./uploads");
   },
-  filename: function (req, file, callback) {
-    // You can write your own logic to define the filename here (before passing it into the callback), e.g:
-    const filename = `file_${crypto.randomUUID()}.jpg`; // Create custom filename (crypto.randomUUID available in Node 19.0.0+ only)
+  filename: function (_req, file, callback) {
+    const filename = file.originalname;
     callback(null, filename);
   },
 });
 
-// Configure multer storage
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "/uploads");
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     cb(null, file.fieldname + "-" + uniqueSuffix + "." + "jpg");
-//   },
-// });
-
-const upload = multer({ dest: "uploads/", storage: storage });
+const upload = multer({
+  dest: "uploads/",
+  storage: storage,
+});
 
 const JWT_ACCESS_SECRET_KEY = "your-access-token-key";
 const JWT_REFRESH_SECRET_KEY = "your-refresh-token-key";
@@ -149,14 +136,44 @@ app.get("/api/users", async (req: Request, res: Response) => {
   });
 });
 
+const deleteOld = async (_req: any, _res: any, next: () => void) => {
+  try {
+    const dirName = __dirname.split("\\");
+
+    dirName.splice(dirName.length - 1, 1);
+
+    const uploadsDir = path.join(dirName.join("\\"), "uploads");
+    const files = await readdir(uploadsDir);
+
+    const deletePromises = files.map(async (file) => {
+      const filePath = path.join(uploadsDir, file);
+
+      // Fayl kengaytmasini tekshirish (jpg, jpeg, png)
+      if (/\.(jpg|jpeg|png)$/.test(file)) {
+        await unlink(filePath);
+        console.log(`Fayl o‘chirildi: ${filePath}`);
+      }
+    });
+
+    await Promise.all(deletePromises);
+    console.log("Barcha rasm fayllari o‘chirildi.");
+  } catch (error) {
+    console.error("Xatolik yuz berdi:", error);
+  }
+
+  next();
+};
+
 app.put(
   "/api/update-user",
+  deleteOld,
   upload.any(),
   async (req: Request, res: Response) => {
     const { userId, firstName, lastName, street, country, city, bio } =
       req.body;
 
-    const file = req.files;
+    const files: any = req.files;
+    const avaName = `./src/api/uploads/${files[0].originalname}`;
 
     const users = await readUsersFromFile();
 
@@ -174,7 +191,7 @@ app.put(
       street: street || users[userIndex].street,
       country: country || users[userIndex].country,
       city: city || users[userIndex].city,
-      avatar: users[userIndex].avatar,
+      avatar: avaName || users[userIndex].avatar,
       bio: bio || users[userIndex].bio,
     };
 

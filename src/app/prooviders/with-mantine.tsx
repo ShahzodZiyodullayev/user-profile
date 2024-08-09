@@ -16,6 +16,7 @@ import { emotionTransform, MantineEmotionProvider } from "@mantine/emotion";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import { ComponentType, createElement } from "react";
+import { Notifications } from "@mantine/notifications";
 
 export const withMantine = (component: ComponentType) => () => {
   const theme = createTheme({
@@ -110,6 +111,7 @@ export const withMantine = (component: ComponentType) => () => {
       theme={theme}
     >
       <MantineEmotionProvider>
+        <Notifications limit={3} position="bottom-center" />
         {createElement(component)}
       </MantineEmotionProvider>
     </MantineProvider>
