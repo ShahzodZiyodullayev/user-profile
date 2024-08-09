@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run build:server",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:server\"",
     "dev:vite": "vite --mode development",
     "dev:server": "cd src/api && npm run start",
+    "build:server": "cd src/api && rimraf ./dist && npx tsc",
     "prod": "concurrently \"npm run prod:vite\" \"npm run prod:server\"",
     "prod:vite": "vite --mode production",
     "prod:server": "cd server && npm run start"
